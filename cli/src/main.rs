@@ -22,6 +22,8 @@ enum Commands {
     },
     /// Build the project
     Build,
+    /// Check local rvkit toolchain dependencies
+    Doctor,
     /// Flash the firmware onto the board
     Flash,
     /// Serial monitor
@@ -42,6 +44,7 @@ fn main() {
         Commands::New { board, name } => commands::new::run(&board, &name),
         Commands::Boards => commands::boards::run(),
         Commands::Build => commands::build::run(),
+        Commands::Doctor => commands::doctor::run(),
         Commands::Flash => commands::flash::run(),
         Commands::Monitor { port, baud } => commands::monitor::run(&port, baud),
     }
