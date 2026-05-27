@@ -142,8 +142,8 @@ baud_rate = 115200
 - [x] Project scaffolding (CH32V003, ESP32-C3)
 - [x] Build integration
 - [x] Flash via wlink / esptool
+- [x] `rvkit boards` command
 - [ ] TUI serial monitor (ratatui)
-- [ ] `rvkit boards` command
 - [ ] Template auto-update
 - [ ] Custom Open & Hack boards support
 
