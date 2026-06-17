@@ -1,43 +1,37 @@
-use serde::Deserialize;
-use std::fs;
+use crate::config;
+use std::path::Path;
 use std::process::Command;
 
-#[derive(Deserialize)]
-struct Config {
-    project: ProjectConfig,
-}
-
-#[derive(Deserialize)]
-struct ProjectConfig {
-    name: String,
-    board: String,
-}
-
 pub fn run() {
-    let toml_content = fs::read_to_string("rvkit.toml").unwrap_or_else(|_| {
-        eprintln!("Error: rvkit.toml not found. Are you inside an rvkit project?");
-        std::process::exit(1);
-    });
-
-    let config: Config = toml::from_str(&toml_content).unwrap_or_else(|_| {
-        eprintln!("Error: rvkit.toml is invalid.");
-        std::process::exit(1);
-    });
+    let config = config::load();
 
     let board = crate::boards::get(&config.project.board).unwrap_or_else(|| {
         eprintln!("Board '{}' is not supported.", config.project.board);
         std::process::exit(1);
     });
 
+    if board.experimental {
+        eprintln!(
+            "Error: '{}' support is experimental — flashing is not implemented yet.",
+            board.name
+        );
+        eprintln!(
+            "       Flashing this board safely requires the {} image pipeline; see the roadmap in the README.",
+            board.flash_tool
+        );
+        std::process::exit(1);
+    }
+
     let binary = format!("zig-out/bin/{}", config.project.name);
+    if !Path::new(&binary).exists() {
+        eprintln!("Error: '{}' not found. Run 'rvkit build' first.", binary);
+        std::process::exit(1);
+    }
 
     println!("Flashing '{}' onto board '{}'...", binary, board.name);
 
     let status = match board.flash_tool {
         "wlink" => Command::new("wlink").args(["flash", &binary]).status(),
-        "esptool" => Command::new("esptool.py")
-            .args(["write_flash", "0x0", &binary])
-            .status(),
         _ => {
             eprintln!("Flash tool '{}' is not supported.", board.flash_tool);
             std::process::exit(1);
@@ -50,8 +44,15 @@ pub fn run() {
             eprintln!("✗ Flash failed.");
             std::process::exit(1);
         }
-        Err(_) => {
-            eprintln!("Error: '{}' not found.", board.flash_tool);
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
+            eprintln!(
+                "Error: '{}' not found. Install it and try again.",
+                board.flash_tool
+            );
+            std::process::exit(1);
+        }
+        Err(e) => {
+            eprintln!("Error: failed to run '{}': {}", board.flash_tool, e);
             std::process::exit(1);
         }
     }

@@ -194,7 +194,7 @@ rvkit/
 │       └── sensor/bme280.zig
 │
 ├── linker/                     # Linker scripts (embarqués par le CLI)
-│   ├── ch322v003.ld
+│   ├── ch32v003.ld
 │   └── esp32c3.ld
 │
 ├── templates/                  # Templates générés par rvkit new
