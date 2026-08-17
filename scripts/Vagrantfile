@@ -1,0 +1,10 @@
+# Vagrantfile - VM Ubuntu de test reproductible pour rvkit.
+Vagrant.configure("2") do |config|
+  config.vm.box = "ubuntu/jammy64"
+  config.vm.hostname = "rvkit-test"
+  config.vm.provider "virtualbox" do |vb|
+    vb.memory = 2048
+    vb.cpus   = 2
+  end
+  config.vm.provision "shell", privileged: false, path: "provision-rvkit.sh"
+end

@@ -30,3 +30,65 @@ pub fn get(name: &str) -> Option<&'static Board> {
 pub fn list() -> &'static [&'static Board] {
     &[&CH32V003, &ESP32_C3]
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn get_returns_known_board_with_correct_metadata() {
+        let b = get("ch32v003").expect("ch32v003 should be supported");
+        assert_eq!(b.name, "ch32v003");
+        assert_eq!(b.flash_tool, "wlink");
+        assert_eq!(b.cpu_arch, "riscv32");
+    }
+
+    #[test]
+    fn esp32c3_is_flashed_with_esptool() {
+        assert_eq!(get("esp32-c3").unwrap().flash_tool, "esptool");
+    }
+
+    #[test]
+    fn get_unknown_board_returns_none() {
+        assert!(get("does-not-exist").is_none());
+    }
+
+    #[test]
+    fn list_contains_every_supported_board() {
+        let boards = list();
+        assert_eq!(boards.len(), 2);
+        assert!(boards.iter().any(|b| b.name == "ch32v003"));
+        assert!(boards.iter().any(|b| b.name == "esp32-c3"));
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn get_returns_known_board_with_correct_metadata() {
+        let b = get("ch32v003").expect("ch32v003 should be supported");
+        assert_eq!(b.name, "ch32v003");
+        assert_eq!(b.flash_tool, "wlink");
+        assert_eq!(b.cpu_arch, "riscv32");
+    }
+
+    #[test]
+    fn esp32c3_is_flashed_with_esptool() {
+        assert_eq!(get("esp32-c3").unwrap().flash_tool, "esptool");
+    }
+
+    #[test]
+    fn get_unknown_board_returns_none() {
+        assert!(get("does-not-exist").is_none());
+    }
+
+    #[test]
+    fn list_contains_every_supported_board() {
+        let boards = list();
+        assert_eq!(boards.len(), 2);
+        assert!(boards.iter().any(|b| b.name == "ch32v003"));
+        assert!(boards.iter().any(|b| b.name == "esp32-c3"));
+    }
+}
