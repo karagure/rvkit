@@ -1,5 +1,7 @@
 mod boards;
 mod commands;
+mod config;
+mod tools;
 
 use clap::{Parser, Subcommand};
 
@@ -22,14 +24,18 @@ enum Commands {
     },
     /// Build the project
     Build,
+    /// Check local rvkit toolchain dependencies
+    Doctor,
     /// Flash the firmware onto the board
     Flash,
     /// Serial monitor
     Monitor {
-        #[arg(long, short, default_value = "/dev/ttyUSB0")]
-        port: String,
-        #[arg(long, short, default_value = "115200")]
-        baud: u32,
+        /// Serial port (e.g. /dev/ttyUSB0, COM3); defaults to [flash] port in rvkit.toml
+        #[arg(long, short)]
+        port: Option<String>,
+        /// Baud rate; defaults to [flash] baud_rate in rvkit.toml, else 115200
+        #[arg(long, short)]
+        baud: Option<u32>,
     },
     /// List supported boards
     Boards,
@@ -42,7 +48,8 @@ fn main() {
         Commands::New { board, name } => commands::new::run(&board, &name),
         Commands::Boards => commands::boards::run(),
         Commands::Build => commands::build::run(),
+        Commands::Doctor => commands::doctor::run(),
         Commands::Flash => commands::flash::run(),
-        Commands::Monitor { port, baud } => commands::monitor::run(&port, baud),
+        Commands::Monitor { port, baud } => commands::monitor::run(port.as_deref(), baud),
     }
 }

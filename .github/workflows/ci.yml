@@ -31,3 +31,30 @@ jobs:
         run: cargo build --verbose
       - name: Test
         run: cargo test --verbose
+
+  zig:
+    name: HAL tests & template smoke test (Zig)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: mlugg/setup-zig@v2
+        with:
+          version: 0.15.2
+      - name: HAL unit tests
+        working-directory: framework
+        run: zig build test --summary all
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Install Linux dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libudev-dev pkg-config
+      - name: Template smoke test (generate project + zig build)
+        run: |
+          cargo build --package rvkit
+          bin="$GITHUB_WORKSPACE/target/debug/rvkit"
+          tmp="$(mktemp -d)"
+          cd "$tmp"
+          "$bin" new --board ch32v003 blink_smoke
+          cd blink_smoke
+          zig build
+          test -f zig-out/bin/blink_smoke

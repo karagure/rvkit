@@ -6,8 +6,12 @@ pub fn run() {
     let status = Command::new("zig")
         .arg("build")
         .status()
-        .unwrap_or_else(|_| {
-            eprintln!("Error: 'zig' not found. Install zig and try again.");
+        .unwrap_or_else(|e| {
+            if e.kind() == std::io::ErrorKind::NotFound {
+                eprintln!("Error: 'zig' not found. Install Zig from https://ziglang.org/download/");
+            } else {
+                eprintln!("Error: failed to run 'zig build': {}", e);
+            }
             std::process::exit(1);
         });
     if status.success() {
